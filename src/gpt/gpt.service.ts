@@ -3,6 +3,8 @@ import * as fs from 'fs';
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  imageGenerationUseCase,
+  imageVariationUseCase,
   orthographyCheckUseCase,
   prosConsDicusserStreamUseCase,
   prosConsDicusserUseCase,
@@ -10,6 +12,8 @@ import {
   translateUseCase,
 } from './use-cases';
 import {
+  ImageGenerationDto,
+  ImageVariationDto,
   OrthographyDto,
   ProsConsDiscusserDto,
   TextToAudioDto,
@@ -66,5 +70,23 @@ export class GptService {
   ) {
     const { prompt } = audioToTextDto;
     return await audioToTextUseCase(this.openai, { audioFile, prompt });
+  }
+
+  async imageGeneration(imageGenerationDto: ImageGenerationDto) {
+    return await imageGenerationUseCase(this.openai, { ...imageGenerationDto });
+  }
+
+  getImageGenerated(fileName: string) {
+    const filePath = path.resolve('./', './generated/images/', fileName);
+    const fileWasFound = fs.existsSync(filePath);
+
+    if (!fileWasFound)
+      throw new NotFoundException(`File ${fileName} not found`);
+
+    return filePath;
+  }
+
+  async imageVariation({ baseImage }: ImageVariationDto) {
+    return imageVariationUseCase(this.openai, { baseImage });
   }
 }
